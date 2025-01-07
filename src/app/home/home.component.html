@@ -9,6 +9,9 @@
   <mat-tab-group>
 
     <mat-tab label="Beginners">
+      @for (course of courses(); track course.id) {
+      <p>{{course.title}}</p>
+      }
 
 
 
