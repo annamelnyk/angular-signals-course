@@ -1,4 +1,4 @@
-import {Component, computed, effect, inject, Injector, OnInit, signal} from '@angular/core'
+import {afterNextRender, Component, computed, effect, inject, Injector, OnInit, signal} from '@angular/core'
 import { CoursesService } from '../services/courses.service';
 import {Course, sortCoursesBySeqNo} from "../models/course.model"
 import {MatTab, MatTabGroup} from "@angular/material/tabs"
@@ -25,13 +25,25 @@ export class HomeComponent implements OnInit {
 
     courses = signal<Course[]>([])
 
+    constructor() {
+        afterNextRender(() => {
+            console.log('2 afterNextRender')
+        })
+    }
+
     ngOnInit() {
+        console.log('1 ngOnInit')
         this.loadCourses()
     }
 
-    async loadCourses() {
-        const coursesList = await this.coursesWithFetchService.loadAllCourses()
+    loadCourses() {
+        //const coursesList = await this.coursesWithFetchService.loadAllCourses()
+        this.coursesService.loadAllCourses().subscribe(
+            (response) => {
+
+                this.courses.set(response.courses)
+            }
+        )
         
-        this.courses.set(coursesList)
     }
 }
