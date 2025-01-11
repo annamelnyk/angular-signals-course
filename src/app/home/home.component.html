@@ -9,16 +9,15 @@
   <mat-tab-group>
 
     <mat-tab label="Beginners">
-      @for (course of courses(); track course.id) {
-      <p>{{course.title}}</p>
+      @for (course of beginnerCourses(); track course.id) {
+        <courses-card-list [inputData]="beginnerCourses()"/>
       }
-
-
-
     </mat-tab>
 
     <mat-tab label="Advanced">
-
+      @for (course of advancedCourses(); track course.id) {
+        <courses-card-list [inputData]="advancedCourses()"/>
+      }
 
     </mat-tab>
 

@@ -23,7 +23,10 @@ export class HomeComponent implements OnInit {
     coursesService = inject(CoursesService)
     coursesWithFetchService = inject(CoursesServiceWithFetch)
 
-    courses = signal<Course[]>([])
+    #courses = signal<Course[]>([])
+
+    beginnerCourses = computed(() => this.#courses().filter(({category}) => category === 'BEGINNER'))
+    advancedCourses = computed(() => this.#courses().filter(({category}) => category !== 'BEGINNER'))
 
     constructor() {
         afterNextRender(() => {
@@ -41,7 +44,7 @@ export class HomeComponent implements OnInit {
         this.coursesService.loadAllCourses().subscribe(
             (response) => {
 
-                this.courses.set(response.courses)
+                this.#courses.set(response.courses.sort(sortCoursesBySeqNo))
             }
         )
         

@@ -12,5 +12,8 @@ import {MatDialog} from "@angular/material/dialog";
     styleUrl: './courses-card-list.component.scss'
 })
 export class CoursesCardListComponent {
+    courses = input.required<Course[]>({
+        alias: 'inputData'
+    })
 
 }
