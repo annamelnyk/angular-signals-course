@@ -49,4 +49,8 @@ export class HomeComponent implements OnInit {
         )
         
     }
+
+    async deleteCourse(course: Course) {
+        await this.coursesService.deleteCourse(course.id)
+    }
 }

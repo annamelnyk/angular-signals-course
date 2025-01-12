@@ -15,5 +15,11 @@ export class CoursesCardListComponent {
     courses = input.required<Course[]>({
         alias: 'inputData'
     })
+    onDeleteCourse = output(e)
+    
+    removeCourse(course: Course) {
+        this.onDeleteCourse.emit(course)
+
+    }
 
 }
