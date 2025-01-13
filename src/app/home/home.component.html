@@ -10,13 +10,13 @@
 
     <mat-tab label="Beginners">
       @for (course of beginnerCourses(); track course.id) {
-        <courses-card-list [inputData]="beginnerCourses()" [(onDeleteCourse)]="removeCourse(course)"/>
+        <courses-card-list [inputData]="beginnerCourses()" (onDeleteCourse)="deleteCourse(course)"/>
       }
     </mat-tab>
 
     <mat-tab label="Advanced">
       @for (course of advancedCourses(); track course.id) {
-        <courses-card-list [inputData]="advancedCourses()" [(onDeleteCourse)]="removeCourse(course)"/>
+        <courses-card-list [inputData]="advancedCourses()" (onDeleteCourse)="deleteCourse(course)"/>
       }
 
     </mat-tab>
