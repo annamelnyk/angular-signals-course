@@ -1,14 +1,14 @@
-import {Component, effect, inject, signal} from '@angular/core';
-import {MAT_DIALOG_DATA, MatDialog, MatDialogConfig, MatDialogRef} from "@angular/material/dialog";
-import {Course} from "../models/course.model";
-import { EditCourseDialogData } from './edit-course-dialog.data.model';
-import {CoursesService} from "../services/courses.service";
-import {LoadingIndicatorComponent} from "../loading/loading.component";
-import {FormBuilder, ReactiveFormsModule} from '@angular/forms';
-import {CourseCategoryComboboxComponent} from "../course-category-combobox/course-category-combobox.component";
-import {CourseCategory} from "../models/course-category.model";
-import {firstValueFrom} from 'rxjs'
-import { saveCourse } from '../../../server/save-course.route';
+import { Component, effect, inject, signal } from '@angular/core'
+import { MAT_DIALOG_DATA, MatDialog, MatDialogConfig, MatDialogRef } from "@angular/material/dialog"
+import { Course } from "../models/course.model"
+import { EditCourseDialogData } from './edit-course-dialog.data.model'
+import { CoursesService } from "../services/courses.service"
+import { LoadingIndicatorComponent } from "../loading/loading.component"
+import { FormBuilder, ReactiveFormsModule } from '@angular/forms'
+import { CourseCategoryComboboxComponent } from "../course-category-combobox/course-category-combobox.component"
+import { CourseCategory } from "../models/course-category.model"
+import { firstValueFrom } from 'rxjs'
+import { saveCourse } from '../../../server/save-course.route'
 
 @Component({
   selector: 'edit-course-dialog',
@@ -25,7 +25,8 @@ export class EditCourseDialogComponent {
   dialogRef = inject(MatDialogRef)
   data: EditCourseDialogData = inject(MAT_DIALOG_DATA)
   fb = inject(FormBuilder)
-  
+  coursesService = inject(CoursesService)
+
   form = this.fb.group({
     title: [''],
     longDescription: [''],
@@ -46,20 +47,51 @@ export class EditCourseDialogComponent {
     this.dialogRef.close()
   }
 
-  saveCourse() {
+  onSave() {
+    const partiallyUpdatedCourse = this.form.value as Partial<Course>
+    if (this.data.mode === 'update') {
+      console.log('edit course')
+      console.log(this.form.value)
+      this.saveCourse(this.data?.course!.id, partiallyUpdatedCourse)
+    }
 
+    if (this.data.mode === 'create') {
+      console.log('create course')
+      console.log(this.form.value)
+      this.createCourse(partiallyUpdatedCourse)
+    }
+  }
+
+  // The benefit of moving api call into separate method is in implementing
+  // proper error handling
+  async saveCourse(courseId: string, course: Partial<Course>) {
+    try {
+      const updatedCourse = await this.coursesService.saveCourse(courseId, course)
+      this.dialogRef.close(updatedCourse)
+    } catch (err) {
+      console.error('Error: ', err)
+    }
+  }
+
+  async createCourse(course: Partial<Course>) {
+    try {
+      let createdCourse = await this.coursesService.createNewCourse(course)
+      this.dialogRef.close(createdCourse)
+    } catch (err) {
+      console.error('Error: ', err)
+    }
   }
 }
 
 export async function openEditCourseDialogComponent(dialog: MatDialog, data: EditCourseDialogData) {
   const config = new MatDialogConfig()
-  
+
   config.autoFocus = true
   config.width = '400px'
   config.data = data
 
   const close$ = dialog.open(EditCourseDialogComponent, config)
     .afterClosed()
-  
+
   return firstValueFrom(close$)
 }

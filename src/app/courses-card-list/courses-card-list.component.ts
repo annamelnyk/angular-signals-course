@@ -13,11 +13,12 @@ import {EditCourseDialogComponent, openEditCourseDialogComponent} from '../edit-
     styleUrl: './courses-card-list.component.scss'
 })
 export class CoursesCardListComponent {
+    dialog = inject(MatDialog)
     courses = input.required<Course[]>({
         alias: 'inputData'
     })
-    onDeleteCourse = output<Course>()
-    dialog = inject(MatDialog)
+    courseUpdated = output<Course>()
+    courseDeleted = output<Course>()
 
     async onEditCourse(course: Course) {
         const updatedCourse = await openEditCourseDialogComponent(this.dialog, {
@@ -27,14 +28,11 @@ export class CoursesCardListComponent {
         })
 
         console.log({updatedCourse})
-        if(updatedCourse) {
-            await this.onEditCourse(updatedCourse)
-        }
+        this.courseUpdated.emit(updatedCourse)
     }
 
     removeCourse(course: Course) {
-        this.onDeleteCourse.emit(course)
-
+        this.courseDeleted.emit(course)
     }
 
 }

@@ -1,6 +1,6 @@
 <loading/>
 
-<form [formGroup]="form" submit="saveCourse()" class="edit-course-form">
+<form [formGroup]="form" (submit)="onSave()" class="edit-course-form">
 
   <h3>{{data.title}}</h3>
 

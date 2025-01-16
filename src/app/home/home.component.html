@@ -2,7 +2,7 @@
 
   <h3>All Courses</h3>
 
-  <button class="btn">
+  <button class="btn" (click)="addCourse()">
     Add Course
   </button>
 
@@ -10,13 +10,21 @@
 
     <mat-tab label="Beginners">
       @for (course of beginnerCourses(); track course.id) {
-        <courses-card-list [inputData]="beginnerCourses()" (onDeleteCourse)="deleteCourse(course)"/>
+        <courses-card-list
+        [inputData]="beginnerCourses()"
+        (courseDeleted)="deleteCourse($event)"
+        (courseUpdated)="updateCourseInUI($event)"
+        />
       }
     </mat-tab>
 
     <mat-tab label="Advanced">
       @for (course of advancedCourses(); track course.id) {
-        <courses-card-list [inputData]="advancedCourses()" (onDeleteCourse)="deleteCourse(course)"/>
+        <courses-card-list
+        [inputData]="advancedCourses()"
+        (courseDeleted)="deleteCourse($event)"
+        (courseUpdated)="updateCourseInUI($event)"
+        />
       }
 
     </mat-tab>
