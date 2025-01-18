@@ -1,9 +1,10 @@
-import {inject, Injectable} from "@angular/core";
-import { HttpClient } from "@angular/common/http";
-import {environment} from "../../environments/environment.development";
-import {firstValueFrom, Observable} from "rxjs";
-import {Course} from "../models/course.model";
-import {GetCoursesResponse} from "../models/get-courses.response";
+import { inject, Injectable } from "@angular/core"
+import { HttpClient, HttpContext } from "@angular/common/http"
+import { environment } from "../../environments/environment.development"
+import { firstValueFrom, Observable } from "rxjs"
+import { Course } from "../models/course.model"
+import { GetCoursesResponse } from "../models/get-courses.response"
+import { SkipLoading } from "../loading/skip-loading.component"
 
 
 @Injectable({
@@ -14,8 +15,12 @@ export class CoursesService {
   env = environment
 
   loadAllCourses(): Observable<GetCoursesResponse> {
-    const coursesResponse$ = this.http.get<GetCoursesResponse>(`${this.env.apiRoot}/courses`)
-    console.log({coursesResponse$})
+    const coursesResponse$ = this.http.get<GetCoursesResponse>(`${this.env.apiRoot}/courses`, {
+      // skip loading by injecting http context token
+
+      //context: new HttpContext().set(SkipLoading, true)
+    })
+    console.log({ coursesResponse$ })
 
     // const response = await firstValueFrom(coursesResponse$)
 
@@ -24,19 +29,19 @@ export class CoursesService {
 
   createNewCourse(course: Partial<Course>): Promise<Course> {
     const newCourse$ = this.http.post<Course>(`${this.env.apiRoot}/courses`, course)
-          
-     return firstValueFrom(newCourse$)
+
+    return firstValueFrom(newCourse$)
   }
-  
+
   saveCourse(courseId: string, course: Partial<Course>): Promise<Course> {
     const updatedCourse$ = this.http.put<Course>(`${this.env.apiRoot}/courses/${courseId}`, course)
-          
-     return firstValueFrom(updatedCourse$)
+
+    return firstValueFrom(updatedCourse$)
   }
-  
+
   deleteCourse(courseId: string) {
-    const deleteResponse$ = this.http.delete<Observable<void>>(`${this.env.apiRoot}/courses/${courseId}`)  
-    
+    const deleteResponse$ = this.http.delete<Observable<void>>(`${this.env.apiRoot}/courses/${courseId}`)
+
     return firstValueFrom(deleteResponse$)
-   }
+  }
 }
