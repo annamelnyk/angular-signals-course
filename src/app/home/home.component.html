@@ -9,24 +9,19 @@
   <mat-tab-group>
 
     <mat-tab label="Beginners">
-      @for (course of beginnerCourses(); track course.id) {
-        <courses-card-list
+      <courses-card-list
         [inputData]="beginnerCourses()"
         (courseDeleted)="deleteCourse($event)"
         (courseUpdated)="updateCourseInUI($event)"
         />
-      }
     </mat-tab>
 
     <mat-tab label="Advanced">
-      @for (course of advancedCourses(); track course.id) {
-        <courses-card-list
+      <courses-card-list
         [inputData]="advancedCourses()"
         (courseDeleted)="deleteCourse($event)"
         (courseUpdated)="updateCourseInUI($event)"
         />
-      }
-
     </mat-tab>
 
   </mat-tab-group>

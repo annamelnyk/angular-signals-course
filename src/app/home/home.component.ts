@@ -9,6 +9,7 @@ import { catchError, from, throwError } from "rxjs"
 import { toObservable, toSignal, outputToObservable, outputFromObservable } from "@angular/core/rxjs-interop"
 import { CoursesServiceWithFetch } from '../services/courses-fetch.service'
 import { EditCourseDialogComponent, openEditCourseDialogComponent } from '../edit-course-dialog/edit-course-dialog.component'
+import { LoadingService } from '../loading/loading.service'
 
 @Component({
     selector: 'home',
@@ -23,6 +24,7 @@ import { EditCourseDialogComponent, openEditCourseDialogComponent } from '../edi
 export class HomeComponent implements OnInit {
     coursesService = inject(CoursesService)
     coursesWithFetchService = inject(CoursesServiceWithFetch)
+    loadingService = inject(LoadingService)
     dialog = inject(MatDialog)
 
     #courses = signal<Course[]>([])
