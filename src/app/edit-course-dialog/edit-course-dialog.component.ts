@@ -9,6 +9,8 @@ import { CourseCategoryComboboxComponent } from "../course-category-combobox/cou
 import { CourseCategory } from "../models/course-category.model"
 import { firstValueFrom } from 'rxjs'
 import { saveCourse } from '../../../server/save-course.route'
+import { MessagesService } from '../messages/messages.service'
+import { text } from 'body-parser'
 
 @Component({
   selector: 'edit-course-dialog',
@@ -26,6 +28,7 @@ export class EditCourseDialogComponent {
   data: EditCourseDialogData = inject(MAT_DIALOG_DATA)
   fb = inject(FormBuilder)
   coursesService = inject(CoursesService)
+  messagesService = inject(MessagesService)
 
   form = this.fb.group({
     title: [''],
@@ -68,8 +71,10 @@ export class EditCourseDialogComponent {
     try {
       const updatedCourse = await this.coursesService.saveCourse(courseId, course)
       this.dialogRef.close(updatedCourse)
-    } catch (err) {
-      console.error('Error: ', err)
+      this.messagesService.showMessage('Course successfully updated', 'success')
+    } catch (err: unknown | any) {
+      const message: string = err?.message ?? 'Error occurred'
+      this.messagesService.showMessage(message, 'error')
     }
   }
 
@@ -77,8 +82,10 @@ export class EditCourseDialogComponent {
     try {
       let createdCourse = await this.coursesService.createNewCourse(course)
       this.dialogRef.close(createdCourse)
-    } catch (err) {
-      console.error('Error: ', err)
+      this.messagesService.showMessage('Course successfully created', 'success')
+    } catch (err: unknown | any) {
+      const message: string = err?.message ?? 'Error occurred'
+      this.messagesService.showMessage(message, 'error')
     }
   }
 }

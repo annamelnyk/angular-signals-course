@@ -26,6 +26,7 @@ export class HomeComponent implements OnInit {
     coursesWithFetchService = inject(CoursesServiceWithFetch)
     loadingService = inject(LoadingService)
     dialog = inject(MatDialog)
+    messagesService = inject(MessagesService)
 
     #courses = signal<Course[]>([])
 
@@ -68,11 +69,13 @@ export class HomeComponent implements OnInit {
     async deleteCourse(course: Course) {
         try {
             await this.coursesService.deleteCourse(course.id)
-
+            this.messagesService.showMessage('Course successfully removed', 'success')
             const updated = this.#courses().filter(c => c.id !== course.id)
             this.#courses.set(updated)
-        } catch (err) {
-            console.error(err)
+        } catch (err: unknown | any) {
+            const message: string = err?.message ?? 'Error occurred'
+            
+            this.messagesService.showMessage(message, 'error')
         }
     }
 
