@@ -15,3 +15,6 @@
 
 ### API calls
 - The benefit of moving api call into separate method (inside component) is in implementing proper error handling
+
+### Router
+- angular router provides Promise based API, need to `await this.router.navigate(...)`
