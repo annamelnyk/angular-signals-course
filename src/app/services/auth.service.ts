@@ -19,6 +19,14 @@ export class AuthService {
 
   constructor() {
     this.initAuthService()
+    
+    effect(() => {
+      const user = this.user()
+
+      if (user) {
+        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user))
+      } 
+    })
   }
 
   initAuthService() {
@@ -34,7 +42,6 @@ export class AuthService {
     const loggedUser$ = this.http.post<User>(`${environment.apiRoot}/login`, { email, password })
     const user = await firstValueFrom(loggedUser$)
 
-    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user))
     this.#userSignal.set(user)
 
     return user
