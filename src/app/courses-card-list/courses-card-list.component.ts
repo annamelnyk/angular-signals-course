@@ -26,12 +26,14 @@ export class CoursesCardListComponent {
             title: 'Edit Course',
             course
         })
+        if (!updatedCourse) return
 
         console.log({updatedCourse})
         this.courseUpdated.emit(updatedCourse)
     }
 
     removeCourse(course: Course) {
+        if (!course) return
         this.courseDeleted.emit(course)
     }
 

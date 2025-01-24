@@ -18,3 +18,7 @@
 
 ### Router
 - angular router provides Promise based API, need to `await this.router.navigate(...)`
+
+### Signals
+- **input**
+- **model** - bi-directional writable signal property, which represents 2 ways contract between `child` and `parent` component

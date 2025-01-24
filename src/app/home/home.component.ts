@@ -79,7 +79,8 @@ export class HomeComponent implements OnInit {
         }
     }
 
-    updateCourseInUI(course: Course) {
+    updateCourseInUI(course: Course | undefined) {
+        if (!course) return
         console.log('in updateCourseinUI ', { course })
         const updated = this.#courses().map(c => c.id === course.id ? course : c)
         this.#courses.set(updated)

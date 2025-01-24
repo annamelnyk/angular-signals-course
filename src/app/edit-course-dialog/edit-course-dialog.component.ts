@@ -30,6 +30,8 @@ export class EditCourseDialogComponent {
   coursesService = inject(CoursesService)
   messagesService = inject(MessagesService)
 
+  category = signal<CourseCategory>('BEGINNER')
+
   form = this.fb.group({
     title: [''],
     longDescription: [''],
@@ -44,6 +46,11 @@ export class EditCourseDialogComponent {
       category: this.data.course?.category,
       image: this.data.course?.iconUrl
     })
+    this.category.set(this.data.course?.category ?? 'BEGINNER')
+
+    effect(() => {
+      console.log('Category changed ', this.category())
+    })
   }
 
   onClose() {
@@ -52,10 +59,12 @@ export class EditCourseDialogComponent {
 
   onSave() {
     const partiallyUpdatedCourse = this.form.value as Partial<Course>
+    partiallyUpdatedCourse.category = this.category()
+
     if (this.data.mode === 'update') {
       console.log('edit course')
       console.log(this.form.value)
-      this.saveCourse(this.data?.course!.id, partiallyUpdatedCourse)
+      this.saveCourse(this.data?.course?.id, partiallyUpdatedCourse)
     }
 
     if (this.data.mode === 'create') {
@@ -67,7 +76,8 @@ export class EditCourseDialogComponent {
 
   // The benefit of moving api call into separate method is in implementing
   // proper error handling
-  async saveCourse(courseId: string, course: Partial<Course>) {
+  async saveCourse(courseId: string | undefined, course: Partial<Course>) {
+    if (!courseId || !course.title) return
     try {
       const updatedCourse = await this.coursesService.saveCourse(courseId, course)
       this.dialogRef.close(updatedCourse)
@@ -79,6 +89,7 @@ export class EditCourseDialogComponent {
   }
 
   async createCourse(course: Partial<Course>) {
+    if (!course.title) return
     try {
       let createdCourse = await this.coursesService.createNewCourse(course)
       this.dialogRef.close(createdCourse)
