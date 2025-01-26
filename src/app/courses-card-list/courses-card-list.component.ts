@@ -36,5 +36,4 @@ export class CoursesCardListComponent {
         if (!course) return
         this.courseDeleted.emit(course)
     }
-
 }

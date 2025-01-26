@@ -1,5 +1,6 @@
 import {Request, Response} from 'express';
 import {COURSES} from "./db-data";
+import { Course } from '../src/app/models/course.model'
 
 
 
@@ -30,7 +31,7 @@ export function getCourseById(req: Request, res: Response) {
 
     const courses:any = Object.values(COURSES);
 
-    const course = courses.find(course => course.id == courseId);
+    const course = courses.find((c: Course) => c.id == courseId);
 
     res.status(200).json(course);
   }, 1500);

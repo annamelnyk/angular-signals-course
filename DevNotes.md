@@ -18,6 +18,8 @@
 
 ### Router
 - angular router provides Promise based API, need to `await this.router.navigate(...)`
+**Data retrieving with router**
+- to handle data via router - create file `entity.resolver.ts`
 
 ### Signals
 - **input**

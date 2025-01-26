@@ -5,6 +5,7 @@ import { firstValueFrom, Observable } from "rxjs"
 import { Course } from "../models/course.model"
 import { GetCoursesResponse } from "../models/get-courses.response"
 import { SkipLoading } from "../loading/skip-loading.component"
+import { getCourseById } from '../../../server/get-courses.route';
 
 
 @Injectable({
@@ -31,6 +32,12 @@ export class CoursesService {
     const newCourse$ = this.http.post<Course>(`${this.env.apiRoot}/courses`, course)
 
     return firstValueFrom(newCourse$)
+  }
+
+  getCourseById(courseId: string): Promise<Course> {
+    const course$ = this.http.get<Course>(`${this.env.apiRoot}/courses/${courseId}`)
+
+    return firstValueFrom(course$)
   }
 
   saveCourse(courseId: string, course: Partial<Course>): Promise<Course> {
