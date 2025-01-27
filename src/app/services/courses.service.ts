@@ -5,8 +5,6 @@ import { firstValueFrom, Observable } from "rxjs"
 import { Course } from "../models/course.model"
 import { GetCoursesResponse } from "../models/get-courses.response"
 import { SkipLoading } from "../loading/skip-loading.component"
-import { getCourseById } from '../../../server/get-courses.route';
-
 
 @Injectable({
   providedIn: "root"

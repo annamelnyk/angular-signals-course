@@ -3,6 +3,8 @@ import { ActivatedRoute } from '@angular/router'
 
 import { Course } from '../models/course.model'
 import { Lesson } from '../models/lesson.model'
+import { LessonsService } from '../services/lessons.service';
+import { MessagesService } from '../messages/messages.service'
 
 @Component({
   selector: 'course',
@@ -16,11 +18,13 @@ export class CourseComponent implements OnInit{
   lessons = signal<Lesson[]>([])
 
   route = inject(ActivatedRoute)
+  lessonsService = inject(LessonsService)
+  messagesService = inject(MessagesService)
 
   ngOnInit() {
     this.course.set(this.route.snapshot.data['course'])
-  
+    this.lessons.set(this.route.snapshot.data['lessons'])
+    console.log(this.route.snapshot.data['lessons'])
   }
-
 
 }
