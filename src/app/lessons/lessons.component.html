@@ -1,5 +1,30 @@
 <div class="lessons">
 
+  @if (mode() === 'master') {
+  <div class="header">
+    <h1>Search Lessons</h1>
+    <div class="form-control search-controls"></div>
+    <input type="text" placeholder="Search a lesson" #search (keyup.enter)="onSearch()">
+    <button class="btn search" (click)="onSearch()">Search</button>
+  </div>
+
+    @if(lessons().length) {
+      <div class="table-container">
+        <table class="results-table">
+          @for(lesson of lessons(); track lesson.id) {
+            <tr>
+              <td>{{lesson.description}}</td>
+              <td>{{lesson.duration}}</td>
+            </tr>
+          }
+
+        </table>
+      </div>
+    }
+  }
+
+  @else {
+  }
 
 </div>
 
