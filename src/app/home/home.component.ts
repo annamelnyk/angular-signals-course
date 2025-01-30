@@ -1,20 +1,23 @@
-import { afterNextRender, Component, computed, effect, inject, Injector, OnInit, signal } from '@angular/core'
+import { afterNextRender, Component, computed, effect, ElementRef, inject, Injector, OnInit, signal, viewChild } from '@angular/core'
 import { CoursesService } from '../services/courses.service'
 import { Course, sortCoursesBySeqNo } from "../models/course.model"
 import { MatTab, MatTabGroup } from "@angular/material/tabs"
 import { CoursesCardListComponent } from "../courses-card-list/courses-card-list.component"
 import { MatDialog } from "@angular/material/dialog"
+import { MatTooltip } from "@angular/material/tooltip"
 import { MessagesService } from "../messages/messages.service"
 import { catchError, from, throwError } from "rxjs"
 import { toObservable, toSignal, outputToObservable, outputFromObservable } from "@angular/core/rxjs-interop"
 import { CoursesServiceWithFetch } from '../services/courses-fetch.service'
 import { EditCourseDialogComponent, openEditCourseDialogComponent } from '../edit-course-dialog/edit-course-dialog.component'
 import { LoadingService } from '../loading/loading.service'
+import { MatToolbar } from '@angular/material/toolbar'
 
 @Component({
     selector: 'home',
     imports: [
         MatTabGroup,
+        MatTooltip,
         MatTab,
         CoursesCardListComponent
     ],
@@ -33,7 +36,26 @@ export class HomeComponent implements OnInit {
     beginnerCourses = computed(() => this.#courses().filter(({ category }) => category === 'BEGINNER'))
     advancedCourses = computed(() => this.#courses().filter(({ category }) => category === 'ADVANCED'))
 
+    // get the component
+    //queriedBeginnerCourses = viewChild<CoursesCardListComponent>('beginnerCourses') 
+    
+    // get the Element
+    // queriedBeginnerCourses = viewChild('beginnerCourses', {
+    //     read: ElementRef
+    // })
+    
+    //get the directive matTooltip
+    queriedBeginnerCourses = viewChild('beginnersCourses', {
+        // can query anything from template
+        read: MatTooltip
+    })
+    
+
+
     constructor() {
+        effect(() => {
+            console.log('queriedBeginnerCourses', this.queriedBeginnerCourses())
+        })
         afterNextRender(() => {
             console.log('2 afterNextRender')
         })

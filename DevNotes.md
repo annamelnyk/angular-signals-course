@@ -24,3 +24,9 @@
 ### Signals
 - **input**
 - **model** - bi-directional writable signal property, which represents 2 ways contract between `child` and `parent` component
+- **signals template query**: let us query html elements or components instance:
+*#input* `in component template`
+`inputElement = viewChild<ElementRef | Component>('input)`
+`inputElements = viewChildren<ElementRef | Component>('inputs)`
+**viewChildren/viewChild** - Query results are represented as a signal of a read-only collection containing all (if viewChildren) matched elements.
+

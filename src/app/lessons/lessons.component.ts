@@ -16,8 +16,11 @@ export class LessonsComponent {
     lessons = signal<Lesson[]>([])
     selectedLesson = signal<Lesson | null>(null)
     lessonsService = inject(LessonsService)
+    searchInput = viewChild<ElementRef>('search')
 
     onSearch() {
+        const query = this.searchInput()?.nativeElement.value
+        console.log({ query })
 
     }
 
