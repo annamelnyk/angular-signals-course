@@ -18,10 +18,28 @@ export class LessonsComponent {
     lessonsService = inject(LessonsService)
     searchInput = viewChild<ElementRef>('search')
 
-    onSearch() {
+    async onSearch() {
         const query = this.searchInput()?.nativeElement.value
         console.log({ query })
 
+        const lessons = await this.lessonsService.loadLessons({query})
+
+        if (lessons) {
+            this.lessons.set(lessons)
+        }
+    }
+
+    onLessonSelected(lesson: Lesson) {
+        this.mode.set('detail')
+        this.selectedLesson.set(lesson)
+    }
+    
+    onCancel() {
+        this.mode.set('master')
+    }
+
+    onUpdateLesson(lesson: Partial<Lesson>) {
+        
     }
 
 
