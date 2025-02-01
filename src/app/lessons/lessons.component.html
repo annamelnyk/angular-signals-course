@@ -27,7 +27,7 @@
     <lesson-detail
       [lesson]="selectedLesson()"
       (cancel)="onCancel()"
-      (update)="onUpdateLesson(lesson)"
+      (lessonUpdated)="onLessonUpdated($event)"
     />
   }
 
