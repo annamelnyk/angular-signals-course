@@ -30,8 +30,10 @@ export class HomeComponent implements OnInit {
     loadingService = inject(LoadingService)
     dialog = inject(MatDialog)
     messagesService = inject(MessagesService)
+    injector = inject(Injector)
 
     #courses = signal<Course[]>([])
+    courses$ = toObservable(this.#courses)
 
     beginnerCourses = computed(() => this.#courses().filter(({ category }) => category === 'BEGINNER'))
     advancedCourses = computed(() => this.#courses().filter(({ category }) => category === 'ADVANCED'))
@@ -53,6 +55,8 @@ export class HomeComponent implements OnInit {
 
 
     constructor() {
+        // here angular knows the injection context of observable courses$ 
+        //this.courses$.subscribe(c => console.log('courses ', c))
         effect(() => {
             console.log('queriedBeginnerCourses', this.queriedBeginnerCourses())
         })
@@ -106,5 +110,14 @@ export class HomeComponent implements OnInit {
         console.log('in updateCourseinUI ', { course })
         const updated = this.#courses().map(c => c.id === course.id ? course : c)
         this.#courses.set(updated)
+    }
+
+    onToObservableExample() {
+        const courses$ = toObservable(this.#courses, {
+            injector: this.injector
+        })
+
+        courses$.subscribe(console.log)
+
     }
 }
