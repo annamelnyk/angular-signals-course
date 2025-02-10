@@ -34,24 +34,25 @@ export class HomeComponent implements OnInit {
 
     #courses = signal<Course[]>([])
     courses$ = toObservable(this.#courses)
+    loadedCourses$ = this.coursesService.loadAllCourses()
 
     beginnerCourses = computed(() => this.#courses().filter(({ category }) => category === 'BEGINNER'))
     advancedCourses = computed(() => this.#courses().filter(({ category }) => category === 'ADVANCED'))
 
     // get the component
     //queriedBeginnerCourses = viewChild<CoursesCardListComponent>('beginnerCourses') 
-    
+
     // get the Element
     // queriedBeginnerCourses = viewChild('beginnerCourses', {
     //     read: ElementRef
     // })
-    
+
     //get the directive matTooltip
     queriedBeginnerCourses = viewChild('beginnersCourses', {
         // can query anything from template
         read: MatTooltip
     })
-    
+
 
 
     constructor() {
@@ -100,7 +101,7 @@ export class HomeComponent implements OnInit {
             this.#courses.set(updated)
         } catch (err: unknown | any) {
             const message: string = err?.message ?? 'Error occurred'
-            
+
             this.messagesService.showMessage(message, 'error')
         }
     }
@@ -118,6 +119,17 @@ export class HomeComponent implements OnInit {
         })
 
         courses$.subscribe(console.log)
+    }
 
+    onToSignalExample() {
+        const allCourses = toSignal(this.loadedCourses$, {
+            injector: this.injector
+        })
+
+        effect(() => {
+            console.log('allCourses ', allCourses())
+        }, {
+            injector: this.injector
+        })
     }
 }
