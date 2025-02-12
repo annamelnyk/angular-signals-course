@@ -32,4 +32,5 @@
 - **toObservable** - converts signal into observable value. Works as effect. After subscribe will wait until signal value will stabilized and change detection cycle triggering will be
 ended => will get the last emitted value!
 - **toObservable/toSignal/effect** if used outside of initialization phase (constructor) - must be provided **injector** - injection context for optimization purposes - to avoid memory leaks. Angular need to know when to unsubscribe and clean up dependencies linked to this effect/signal.
+**linkedSignal** - can be presented as a writable `computed` signal
 

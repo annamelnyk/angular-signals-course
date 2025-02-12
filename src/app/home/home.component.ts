@@ -122,14 +122,27 @@ export class HomeComponent implements OnInit {
     }
 
     onToSignalExample() {
-        const allCourses = toSignal(this.loadedCourses$, {
-            injector: this.injector
-        })
+        // const allCourses = toSignal(this.loadedCourses$, {
+        //     injector: this.injector
+        // })
+        try {
+            const allCourses$ = from(this.coursesService.loadAllCourses())
+                .pipe(catchError((err) => {
+                    console.log('Error caught in catchError: ', err)
+                    throw err
+                }))
+            const allCourses = toSignal(allCourses$, {
+                injector: this.injector,
+                rejectErrors: true
+            })
 
-        effect(() => {
-            console.log('allCourses ', allCourses())
-        }, {
-            injector: this.injector
-        })
+            effect(() => {
+                console.log('allCourses ', allCourses())
+            }, {
+                injector: this.injector
+            })
+        } catch (err) {
+            console.error('Error caught in the catch block: ', err)
+        }
     }
 }
