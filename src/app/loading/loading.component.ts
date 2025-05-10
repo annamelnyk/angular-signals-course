@@ -1,7 +1,6 @@
-import {Component, inject, Signal} from "@angular/core";
-import {MatProgressSpinner} from "@angular/material/progress-spinner";
-import {LoadingService} from "./loading.service";
-import {NavigationCancel, NavigationEnd, NavigationError, NavigationStart, Router} from "@angular/router";
+import { Component, inject, signal, Signal } from "@angular/core"
+import { MatProgressSpinner } from "@angular/material/progress-spinner"
+import { LoadingService } from "./loading.service"
 
 @Component({
     selector: "loading",
@@ -10,9 +9,7 @@ import {NavigationCancel, NavigationEnd, NavigationError, NavigationStart, Route
     imports: [MatProgressSpinner]
 })
 export class LoadingIndicatorComponent {
+    loadingService = inject(LoadingService)
 
-  loadingService = inject(LoadingService);
-
-  loading = this.loadingService.loading;
-
+    loading = this.loadingService.loadingSignal
 }

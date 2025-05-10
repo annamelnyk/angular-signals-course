@@ -1,188 +1,148 @@
-import {
-  afterNextRender, ChangeDetectorRef,
-  Component,
-  computed,
-  effect,
-  EffectRef, ElementRef,
-  inject,
-  Injector,
-  signal,
-  viewChild
-} from '@angular/core';
-import {CoursesService} from "../services/courses.service";
-import {Course, sortCoursesBySeqNo} from "../models/course.model";
-import {MatTab, MatTabGroup} from "@angular/material/tabs";
-import {CoursesCardListComponent} from "../courses-card-list/courses-card-list.component";
-import {MatDialog} from "@angular/material/dialog";
-import {MessagesService} from "../messages/messages.service";
-import {catchError, from, interval, Observable, startWith, throwError} from "rxjs";
-import {toObservable, toSignal, outputToObservable, outputFromObservable} from "@angular/core/rxjs-interop";
-import {CoursesServiceWithFetch} from "../services/courses-fetch.service";
-import {openEditCourseDialog} from "../edit-course-dialog/edit-course-dialog.component";
-import {LoadingService} from "../loading/loading.service";
+import { afterNextRender, Component, computed, effect, ElementRef, inject, Injector, OnInit, signal, viewChild } from '@angular/core'
+import { CoursesService } from '../services/courses.service'
+import { Course, sortCoursesBySeqNo } from "../models/course.model"
+import { MatTab, MatTabGroup } from "@angular/material/tabs"
+import { CoursesCardListComponent } from "../courses-card-list/courses-card-list.component"
+import { MatDialog } from "@angular/material/dialog"
+import { MatTooltip } from "@angular/material/tooltip"
+import { MessagesService } from "../messages/messages.service"
+import { catchError, from, throwError } from "rxjs"
+import { toObservable, toSignal, outputToObservable, outputFromObservable } from "@angular/core/rxjs-interop"
+import { CoursesServiceWithFetch } from '../services/courses-fetch.service'
+import { EditCourseDialogComponent, openEditCourseDialogComponent } from '../edit-course-dialog/edit-course-dialog.component'
+import { LoadingService } from '../loading/loading.service'
+import { MatToolbar } from '@angular/material/toolbar'
 
 @Component({
     selector: 'home',
     imports: [
         MatTabGroup,
+        MatTooltip,
         MatTab,
         CoursesCardListComponent
     ],
     templateUrl: './home.component.html',
     styleUrl: './home.component.scss'
 })
-export class HomeComponent {
+export class HomeComponent implements OnInit {
+    coursesService = inject(CoursesService)
+    coursesWithFetchService = inject(CoursesServiceWithFetch)
+    loadingService = inject(LoadingService)
+    dialog = inject(MatDialog)
+    messagesService = inject(MessagesService)
+    injector = inject(Injector)
 
-  #courses = signal<Course[]>([]);
+    #courses = signal<Course[]>([])
+    courses$ = toObservable(this.#courses)
+    loadedCourses$ = this.coursesService.loadAllCourses()
 
-  coursesService = inject(CoursesService);
+    beginnerCourses = computed(() => this.#courses().filter(({ category }) => category === 'BEGINNER'))
+    advancedCourses = computed(() => this.#courses().filter(({ category }) => category === 'ADVANCED'))
 
-  dialog = inject(MatDialog);
+    // get the component
+    //queriedBeginnerCourses = viewChild<CoursesCardListComponent>('beginnerCourses') 
 
-  beginnerCourses = computed(() => {
-    const courses = this.#courses();
-    return courses.filter(course =>
-      course.category === "BEGINNER")
-  });
+    // get the Element
+    // queriedBeginnerCourses = viewChild('beginnerCourses', {
+    //     read: ElementRef
+    // })
 
-  advancedCourses = computed(() => {
-    const courses = this.#courses();
-    return courses.filter(course =>
-      course.category === "ADVANCED")
-  });
-
-  messageService = inject(MessagesService);
-
-  beginnersList = viewChild<CoursesCardListComponent>("beginnersList");
-
-  constructor() {
-
-    effect(() => {
-      console.log(`beginnersList: `, this.beginnersList())
+    //get the directive matTooltip
+    queriedBeginnerCourses = viewChild('beginnersCourses', {
+        // can query anything from template
+        read: MatTooltip
     })
 
-    effect(() => {
-      console.log(`Beginner courses: `, this.beginnerCourses())
-      console.log(`Advanced courses: `, this.advancedCourses())
-    });
-
-    this.loadCourses()
-      .then(() => console.log(`All courses loaded:`, this.#courses()));
-  }
-
-  async loadCourses() {
-    try {
-      const courses = await this.coursesService.loadAllCourses();
-      this.#courses.set(courses.sort(sortCoursesBySeqNo));
-    }
-    catch(err) {
-      this.messageService.showMessage(
-        `Error loading courses!`,
-        "error"
-      );
-      console.error(err);
-    }
-  }
-
-  onCourseUpdated(updatedCourse: Course) {
-    const courses = this.#courses();
-    const newCourses = courses.map(course => (
-      course.id === updatedCourse.id ? updatedCourse : course
-    ));
-    this.#courses.set(newCourses);
-  }
-
-  async onCourseDeleted(courseId: string) {
-    try {
-      await this.coursesService.deleteCourse(courseId);
-      const courses = this.#courses();
-      const newCourses = courses.filter(
-        course => course.id !== courseId)
-      this.#courses.set(newCourses);
-    }
-    catch (err) {
-      console.error(err)
-      alert(`Error deleting course.`)
-    }
-  }
-
-  async onAddCourse() {
-    const newCourse = await openEditCourseDialog(
-      this.dialog,
-      {
-        mode: "create",
-        title: "Create New Course"
-      }
-    )
-    if (!newCourse) {
-      return;
-    }
-    const newCourses = [
-      ...this.#courses(),
-      newCourse
-    ];
-    this.#courses.set(newCourses);
-  }
-
-  onToObservableExample() {
-    const numbers = signal(0);
-    numbers.set(1);
-    numbers.set(2);
-    numbers.set(3);
-    const numbers$ = toObservable(numbers, {
-      injector: this.injector
-    });
-    numbers.set(4);
-    numbers$.subscribe(val => {
-      console.log(`numbers$: `, val)
-    })
-    numbers.set(5);
-  }
 
 
-  injector = inject(Injector);
-
-  onToSignalExample() {
-    try {
-      const courses$ = from(this.coursesService.loadAllCourses())
-        .pipe(
-          catchError(err => {
-            console.log(`Error caught in catchError`, err)
-            throw err;
-          })
-        );
-      const courses = toSignal(courses$, {
-        injector: this.injector,
-        rejectErrors: true
-      })
-      effect(() => {
-        console.log(`Courses: `, courses())
-      }, {
-        injector: this.injector
-      })
-
-      setInterval(() => {
-        console.log(`Reading courses signal: `, courses())
-      }, 1000)
-
-    }
-    catch (err) {
-      console.log(`Error in catch block: `, err)
+    constructor() {
+        // here angular knows the injection context of observable courses$ 
+        //this.courses$.subscribe(c => console.log('courses ', c))
+        effect(() => {
+            console.log('queriedBeginnerCourses', this.queriedBeginnerCourses())
+        })
+        afterNextRender(() => {
+            console.log('2 afterNextRender')
+        })
     }
 
-  }
+    ngOnInit() {
+        console.log('1 ngOnInit')
+        this.loadCourses()
+    }
 
+    loadCourses() {
+        //const coursesList = await this.coursesWithFetchService.loadAllCourses()
+        this.coursesService.loadAllCourses().subscribe(
+            (response) => {
+
+                this.#courses.set(response.courses.sort(sortCoursesBySeqNo))
+            }
+        )
+    }
+
+    async addCourse() {
+        const createdCourse = await openEditCourseDialogComponent(this.dialog, {
+            mode: 'create',
+            title: 'Create Course'
+        })
+
+        if (createdCourse) {
+            this.#courses.update(prev => [...prev, createdCourse])
+        }
+
+    }
+
+    async deleteCourse(course: Course) {
+        try {
+            await this.coursesService.deleteCourse(course.id)
+            this.messagesService.showMessage('Course successfully removed', 'success')
+            const updated = this.#courses().filter(c => c.id !== course.id)
+            this.#courses.set(updated)
+        } catch (err: unknown | any) {
+            const message: string = err?.message ?? 'Error occurred'
+
+            this.messagesService.showMessage(message, 'error')
+        }
+    }
+
+    updateCourseInUI(course: Course | undefined) {
+        if (!course) return
+        console.log('in updateCourseinUI ', { course })
+        const updated = this.#courses().map(c => c.id === course.id ? course : c)
+        this.#courses.set(updated)
+    }
+
+    onToObservableExample() {
+        const courses$ = toObservable(this.#courses, {
+            injector: this.injector
+        })
+
+        courses$.subscribe(console.log)
+    }
+
+    onToSignalExample() {
+        // const allCourses = toSignal(this.loadedCourses$, {
+        //     injector: this.injector
+        // })
+        try {
+            const allCourses$ = from(this.coursesService.loadAllCourses())
+                .pipe(catchError((err) => {
+                    console.log('Error caught in catchError: ', err)
+                    throw err
+                }))
+            const allCourses = toSignal(allCourses$, {
+                injector: this.injector,
+                rejectErrors: true
+            })
+
+            effect(() => {
+                console.log('allCourses ', allCourses())
+            }, {
+                injector: this.injector
+            })
+        } catch (err) {
+            console.error('Error caught in the catch block: ', err)
+        }
+    }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

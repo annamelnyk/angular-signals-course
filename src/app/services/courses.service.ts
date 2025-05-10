@@ -1,54 +1,52 @@
-import {inject, Injectable} from "@angular/core";
-import { HttpClient, HttpContext } from "@angular/common/http";
-import {environment} from "../../environments/environment";
-import {firstValueFrom, Observable} from "rxjs";
-import {Course} from "../models/course.model";
-import {GetCoursesResponse} from "../models/get-courses.response";
-import {SkipLoading} from "../loading/skip-loading.component";
-
+import { inject, Injectable } from "@angular/core"
+import { HttpClient, HttpContext } from "@angular/common/http"
+import { environment } from "../../environments/environment.development"
+import { firstValueFrom, Observable } from "rxjs"
+import { Course } from "../models/course.model"
+import { GetCoursesResponse } from "../models/get-courses.response"
+import { SkipLoading } from "../loading/skip-loading.component"
 
 @Injectable({
   providedIn: "root"
 })
 export class CoursesService {
+  http = inject(HttpClient)
+  env = environment
 
-  http = inject(HttpClient);
+  loadAllCourses(): Observable<GetCoursesResponse> {
+    const coursesResponse$ = this.http.get<GetCoursesResponse>(`${this.env.apiRoot}/courses`, {
+      // skip loading by injecting http context token
 
-  env = environment;
+      //context: new HttpContext().set(SkipLoading, true)
+    })
+    console.log({ coursesResponse$ })
 
-  async loadAllCourses():Promise<Course[]> {
-    const courses$ =
-      this.http.get<GetCoursesResponse>(`${this.env.apiRoot}/courses`);
-    const response = await firstValueFrom(courses$);
-    return response.courses;
+    // const response = await firstValueFrom(coursesResponse$)
+
+    return coursesResponse$
   }
 
-  async getCourseById(courseId:string): Promise<Course> {
-    const course$ =
-        this.http.get<Course>(
-          `${this.env.apiRoot}/courses/${courseId}`);
+  createNewCourse(course: Partial<Course>): Promise<Course> {
+    const newCourse$ = this.http.post<Course>(`${this.env.apiRoot}/courses`, course)
+
+    return firstValueFrom(newCourse$)
+  }
+
+  getCourseById(courseId: string): Promise<Course> {
+    const course$ = this.http.get<Course>(`${this.env.apiRoot}/courses/${courseId}`)
+
     return firstValueFrom(course$)
   }
 
-  async createCourse(course: Partial<Course>) : Promise<Course> {
-    const course$ =
-      this.http.post<Course>(`${this.env.apiRoot}/courses`, course)
-    return firstValueFrom(course$);
+  saveCourse(courseId: string, course: Partial<Course>): Promise<Course> {
+    const updatedCourse$ = this.http.put<Course>(`${this.env.apiRoot}/courses/${courseId}`, course)
+
+    return firstValueFrom(updatedCourse$)
   }
 
-  async saveCourse(courseId:string,
-                   changes: Partial<Course>) : Promise<Course> {
-    const course$ =
-      this.http.put<Course>(`${this.env.apiRoot}/courses/${courseId}`,
-        changes)
-    return firstValueFrom(course$);
+  deleteCourse(courseId: string) {
+    const deleteResponse$ = this.http.delete<Observable<void>>(`${this.env.apiRoot}/courses/${courseId}`)
+
+    return firstValueFrom(deleteResponse$)
   }
-
-  async deleteCourse(courseId:string) {
-    const delete$ =
-      this.http.delete(`${this.env.apiRoot}/courses/${courseId}`);
-    return firstValueFrom(delete$);
-  }
-
-
 }

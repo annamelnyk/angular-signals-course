@@ -1,7 +1,8 @@
-import {Component, ElementRef, inject, signal, viewChild} from '@angular/core';
-import {LessonsService} from "../services/lessons.service";
-import {Lesson} from "../models/lesson.model";
-import {LessonDetailComponent} from "./lesson-detail/lesson-detail.component";
+import { Component, ElementRef, inject, signal, viewChild } from '@angular/core'
+import { LessonsService } from '../services/lessons.service'
+import { Lesson } from "../models/lesson.model"
+import { LessonDetailComponent } from "./lesson-detail/lesson-detail.component"
+import { MessagesService } from '../messages/messages.service'
 
 @Component({
     selector: 'lessons',
@@ -12,36 +13,35 @@ import {LessonDetailComponent} from "./lesson-detail/lesson-detail.component";
     styleUrl: './lessons.component.scss'
 })
 export class LessonsComponent {
+    mode = signal<'master' | 'detail'>('master')
+    lessons = signal<Lesson[]>([])
+    selectedLesson = signal<Lesson | null>(null)
+    lessonsService = inject(LessonsService)
+    messagesService = inject(MessagesService)
+    searchInput = viewChild<ElementRef>('search')
 
-  mode = signal<'master' | 'detail'>("master");
-  lessons = signal<Lesson[]>([]);
-  selectedLesson = signal<Lesson | null>(null);
-  lessonsService = inject(LessonsService);
+    async onSearch() {
+        const query = this.searchInput()?.nativeElement.value
+        console.log({ query })
 
-  searchInput = viewChild.required<ElementRef>('search');
+        const lessons = await this.lessonsService.loadLessons({ query })
 
-  async onSearch() {
-    const query = this.searchInput()?.nativeElement.value;
-    console.log('search query', query);
-    const results =
-      await this.lessonsService.loadLessons({query});
-    this.lessons.set(results);
+        if (lessons) {
+            this.lessons.set(lessons)
+        }
+    }
 
-  }
+    onLessonSelected(lesson: Lesson) {
+        this.mode.set('detail')
+        this.selectedLesson.set(lesson)
+    }
 
-  onLessonSelected(lesson: Lesson) {
-    this.mode.set("detail");
-    this.selectedLesson.set(lesson);
-  }
+    onLessonUpdated(lesson: Lesson) {
+        this.lessons.update(prevLessons => prevLessons
+            .map(l => l.id === lesson.id ? lesson : l))
+    }
 
-  onCancel() {
-    this.mode.set("master");
-  }
-
-  onLessonUpdated(lesson: Lesson) {
-    this.lessons.update(lessons =>
-      lessons.map(l => l.id === lesson.id ? lesson : l)
-    );
-
-  }
+    onCancel() {
+        this.mode.set('master')
+    }
 }

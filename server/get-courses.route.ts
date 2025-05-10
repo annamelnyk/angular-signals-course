@@ -1,5 +1,6 @@
 import {Request, Response} from 'express';
 import {COURSES} from "./db-data";
+import { Course } from '../src/app/models/course.model'
 
 
 
@@ -11,17 +12,17 @@ export function getAllCourses(req: Request, res: Response) {
       return;
   */
 
- console.log(`Called GET /api/courses`);
+
 
   setTimeout(() => {
 
-    console.log(`Returning GET /api/courses`);
-
     res.status(200).json({courses:Object.values(COURSES)});
 
-  }, 1000);
+  }, 1500);
+
 
 }
+
 
 export function getCourseById(req: Request, res: Response) {
 
@@ -30,9 +31,9 @@ export function getCourseById(req: Request, res: Response) {
 
     const courses:any = Object.values(COURSES);
 
-    const course = courses.find(course => course.id == courseId);
+    const course = courses.find((c: Course) => c.id == courseId);
 
     res.status(200).json(course);
-  })
+  }, 1500);
 
 }

@@ -1,9 +1,8 @@
-import {Component, inject, input, output} from '@angular/core';
+import {Component, effect, ElementRef, inject, input, output, viewChildren} from '@angular/core';
 import {RouterLink} from "@angular/router";
 import {Course} from "../models/course.model";
 import {MatDialog} from "@angular/material/dialog";
-import {openEditCourseDialog} from "../edit-course-dialog/edit-course-dialog.component";
-import {firstValueFrom} from "rxjs";
+import {EditCourseDialogComponent, openEditCourseDialogComponent} from '../edit-course-dialog/edit-course-dialog.component'
 
 @Component({
     selector: 'courses-card-list',
@@ -14,33 +13,37 @@ import {firstValueFrom} from "rxjs";
     styleUrl: './courses-card-list.component.scss'
 })
 export class CoursesCardListComponent {
+    dialog = inject(MatDialog)
+    courses = input.required<Course[]>({
+        alias: 'inputData'
+    })
+    courseUpdated = output<Course>()
+    courseDeleted = output<Course>()
+    courseCards = viewChildren<ElementRef>('courseCard')
+    // courseCards = viewChildren('courseCard', {
+    //     read: ElementRef
+    // })
 
-  courses = input.required<Course[]>();
-
-  courseUpdated = output<Course>();
-
-  courseDeleted = output<string>();
-
-  dialog = inject(MatDialog);
-
-  async onEditCourse(course: Course) {
-    const newCourse = await openEditCourseDialog(
-      this.dialog,
-      {
-        mode: "update",
-        title: "Update Existing Course",
-        course
-      }
-    )
-    if (!newCourse) {
-      return;
+    constructor() {
+        effect(() => {
+            console.log(this.courseCards())
+        })
     }
-    console.log(`Course edited:`, newCourse);
-    this.courseUpdated.emit(newCourse);
-  }
 
-  onCourseDeleted(course: Course) {
-    this.courseDeleted.emit(course.id);
-  }
+    async onEditCourse(course: Course) {
+        const updatedCourse = await openEditCourseDialogComponent(this.dialog, {
+            mode: 'update',
+            title: 'Edit Course',
+            course
+        })
+        if (!updatedCourse) return
 
+        console.log({updatedCourse})
+        this.courseUpdated.emit(updatedCourse)
+    }
+
+    removeCourse(course: Course) {
+        if (!course) return
+        this.courseDeleted.emit(course)
+    }
 }

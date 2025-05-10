@@ -1,111 +1,115 @@
-import {Component, effect, inject, signal} from '@angular/core';
-import {MAT_DIALOG_DATA, MatDialog, MatDialogConfig, MatDialogRef} from "@angular/material/dialog";
-import {Course} from "../models/course.model";
-import {EditCourseDialogData} from "./edit-course-dialog.data.model";
-import {CoursesService} from "../services/courses.service";
-import {LoadingIndicatorComponent} from "../loading/loading.component";
-import {FormBuilder, ReactiveFormsModule} from '@angular/forms';
-import {CourseCategoryComboboxComponent} from "../course-category-combobox/course-category-combobox.component";
-import {CourseCategory} from "../models/course-category.model";
-import {firstValueFrom} from "rxjs";
+import { Component, effect, inject, signal } from '@angular/core'
+import { MAT_DIALOG_DATA, MatDialog, MatDialogConfig, MatDialogRef } from "@angular/material/dialog"
+import { Course } from "../models/course.model"
+import { EditCourseDialogData } from './edit-course-dialog.data.model'
+import { CoursesService } from "../services/courses.service"
+import { LoadingIndicatorComponent } from "../loading/loading.component"
+import { FormBuilder, ReactiveFormsModule } from '@angular/forms'
+import { CourseCategoryComboboxComponent } from "../course-category-combobox/course-category-combobox.component"
+import { CourseCategory } from "../models/course-category.model"
+import { firstValueFrom } from 'rxjs'
+import { saveCourse } from '../../../server/save-course.route'
+import { MessagesService } from '../messages/messages.service'
+import { text } from 'body-parser'
 
 @Component({
-    selector: 'edit-course-dialog',
-    imports: [
-        LoadingIndicatorComponent,
-        ReactiveFormsModule,
-        CourseCategoryComboboxComponent
-    ],
-    templateUrl: './edit-course-dialog.component.html',
-    styleUrl: './edit-course-dialog.component.scss'
+  selector: 'edit-course-dialog',
+  standalone: true,
+  imports: [
+    LoadingIndicatorComponent,
+    ReactiveFormsModule,
+    CourseCategoryComboboxComponent
+  ],
+  templateUrl: './edit-course-dialog.component.html',
+  styleUrl: './edit-course-dialog.component.scss'
 })
 export class EditCourseDialogComponent {
+  dialogRef = inject(MatDialogRef)
+  data: EditCourseDialogData = inject(MAT_DIALOG_DATA)
+  fb = inject(FormBuilder)
+  coursesService = inject(CoursesService)
+  messagesService = inject(MessagesService)
 
-  dialogRef = inject(MatDialogRef);
-
-  data: EditCourseDialogData = inject(MAT_DIALOG_DATA);
-
-  fb = inject(FormBuilder);
+  category = signal<CourseCategory>('BEGINNER')
 
   form = this.fb.group({
     title: [''],
     longDescription: [''],
-    iconUrl: ['']
-  });
-
-  courseService = inject(CoursesService);
-
-  category = signal<CourseCategory>("BEGINNER");
+    category: [''],
+    image: [''],
+  })
 
   constructor() {
     this.form.patchValue({
-      title: this.data?.course?.title,
-      longDescription: this.data?.course?.longDescription,
-      iconUrl: this.data?.course?.iconUrl
-    });
-    this.category.set(this.data?.course?.category ?? "BEGINNER");
+      title: this.data.course?.title,
+      longDescription: this.data.course?.longDescription,
+      category: this.data.course?.category,
+      image: this.data.course?.iconUrl
+    })
+    this.category.set(this.data.course?.category ?? 'BEGINNER')
+
     effect(() => {
-      console.log(`Course category bi-directional binding:
-      ${this.category()}`);
+      console.log('Category changed ', this.category())
     })
   }
 
   onClose() {
-    this.dialogRef.close();
+    this.dialogRef.close()
   }
 
-  async onSave() {
-    const courseProps =
-      this.form.value as Partial<Course>;
-    courseProps.category = this.category();
-    if (this.data?.mode === "update") {
-      await this.saveCourse(this.data?.course!.id, courseProps);
+  onSave() {
+    const partiallyUpdatedCourse = this.form.value as Partial<Course>
+    partiallyUpdatedCourse.category = this.category()
+
+    if (this.data.mode === 'update') {
+      console.log('edit course')
+      console.log(this.form.value)
+      this.saveCourse(this.data?.course?.id, partiallyUpdatedCourse)
     }
-    else if (this.data?.mode === "create") {
-      await this.createCourse(courseProps);
+
+    if (this.data.mode === 'create') {
+      console.log('create course')
+      console.log(this.form.value)
+      this.createCourse(partiallyUpdatedCourse)
+    }
+  }
+
+  // The benefit of moving api call into separate method is in implementing
+  // proper error handling
+  async saveCourse(courseId: string | undefined, course: Partial<Course>) {
+    if (!courseId || !course.title) return
+    try {
+      const updatedCourse = await this.coursesService.saveCourse(courseId, course)
+      this.dialogRef.close(updatedCourse)
+      this.messagesService.showMessage('Course successfully updated', 'success')
+    } catch (err: unknown | any) {
+      const message: string = err?.message ?? 'Error occurred'
+      this.messagesService.showMessage(message, 'error')
     }
   }
 
   async createCourse(course: Partial<Course>) {
+    if (!course.title) return
     try {
-      const newCourse = await this.courseService.createCourse(course);
-      this.dialogRef.close(newCourse);
-    }
-    catch (err) {
-      console.error(err);
-      alert(`Error creating the course.`)
-    }
-
-  }
-
-  async saveCourse(courseId:string, changes: Partial<Course>) {
-    try {
-      const updatedCourse =
-        await this.courseService.saveCourse(courseId, changes);
-      this.dialogRef.close(updatedCourse);
-    }
-    catch (err) {
-      console.error(err);
-      alert(`Failed to save the course.`);
+      let createdCourse = await this.coursesService.createNewCourse(course)
+      this.dialogRef.close(createdCourse)
+      this.messagesService.showMessage('Course successfully created', 'success')
+    } catch (err: unknown | any) {
+      const message: string = err?.message ?? 'Error occurred'
+      this.messagesService.showMessage(message, 'error')
     }
   }
-
-
 }
 
-export async function openEditCourseDialog(
-  dialog: MatDialog,
-  data: EditCourseDialogData) {
-  const config = new MatDialogConfig();
-  config.disableClose = true;
-  config.autoFocus = true;
-  config.width  = "400px";
-  config.data = data;
+export async function openEditCourseDialogComponent(dialog: MatDialog, data: EditCourseDialogData) {
+  const config = new MatDialogConfig()
 
-  const close$ = dialog.open(
-    EditCourseDialogComponent,
-    config)
-    .afterClosed();
+  config.autoFocus = true
+  config.width = '400px'
+  config.data = data
 
-  return firstValueFrom(close$);
+  const close$ = dialog.open(EditCourseDialogComponent, config)
+    .afterClosed()
+
+  return firstValueFrom(close$)
 }

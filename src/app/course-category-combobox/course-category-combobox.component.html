@@ -3,8 +3,7 @@
 
   <label>{{label()}}</label>
 
-  <select [value]="value()" #category
-    (change)="onCategoryChanged(category.value)">
+  <select  #category [value]="value()" (change)="onCategoryChange(category.value)">
     <option value="BEGINNER">Beginners</option>
     <option value="INTERMEDIATE">Intermediate</option>
     <option value="ADVANCED">Advanced</option>
